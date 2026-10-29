@@ -30,13 +30,7 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between py-10 px-4 sm:px-6">
-
-    <!-- Floating Settings Button -->
-    <button onclick="toggleSettings()" class="fixed top-4 right-4 z-40 bg-[#1c1c21] hover:bg-[#27272a] text-zinc-300 p-3 rounded-full shadow-lg border border-zinc-800 transition-all duration-300 hover:scale-105" title="Настроить ссылки">
-        <i class="fa-solid fa-gear text-lg"></i>
-    </button>
-
-    <!-- Main Container -->
+<!-- Main Container -->
     <div class="w-full max-w-md mx-auto flex flex-col items-center">
 
         <!-- Header Section with Emoji Avatar -->
@@ -71,34 +65,7 @@
         </div>
 
     </div>
-
-    <!-- Edit URLs Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
-        <div class="bg-[#1c1c21] border border-zinc-800 rounded-3xl p-6 max-w-md w-full shadow-2xl max-h-[90vh] flex flex-col">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-zinc-100 flex items-center gap-2">
-                    <i class="fa-solid fa-link text-purple-400"></i> Настройка ссылок
-                </h3>
-                <button onclick="toggleSettings()" class="text-zinc-400 hover:text-zinc-100 p-2 rounded-xl">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
-            <p class="text-xs text-zinc-400 mb-4">Вставьте ваши актуальные ссылки для каждой кнопки ниже:</p>
-            
-            <div id="settingsFormList" class="overflow-y-auto space-y-3 pr-2 mb-4 flex-1">
-                <!-- Dynamically populated inputs -->
-            </div>
-
-            <div class="flex gap-3 pt-2 border-t border-zinc-800">
-                <button onclick="resetDefaultLinks()" class="w-1/3 py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium rounded-xl transition-colors text-sm">
-                    Сбросить
-                </button>
-                <button onclick="saveLinks()" class="w-2/3 py-2.5 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium rounded-xl transition-all text-sm shadow-lg shadow-purple-900/30">
-                    Сохранить
-                </button>
-            </div>
-        </div>
-    </div>
+</div>
 
     <!-- Custom Notification Modal -->
     <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
@@ -122,17 +89,25 @@
             { id: 'telegram', name: 'Telegram', desc: 'Новостной канал и анонсы', url: 'https://t.me/morishiba', icon: 'fa-brands fa-telegram', color: 'sky' },
             { id: 'donate', name: 'Донаты', desc: 'Поддержать стримера копеечкой', url: 'https://www.donationalerts.com/r/morishiba', icon: 'fa-solid fa-heart', color: 'pink' },
             { id: 'memes', name: 'Мемы и стикеры на стрим', desc: 'Отправить мем или стикер во время стрима', url: 'https://memealerts.com/6abe22b02458c5de3476d049', icon: 'fa-solid fa-image', color: 'amber' },
-            { id: 'wishlist', name: 'Вишлист', desc: 'Подарок для улучшения контента', url: 'https://fetta.app/u/morishiba', icon: 'fa-solid fa-gift', color: 'emerald' },
-            { id: 'tiktok', name: 'TikTok', desc: 'Клипы и короткие видео', url: 'https://www.tiktok.com/@morishiba?_r=1&_t=ZS-998Fu1ks95U', icon: 'fa-brands fa-tiktok', color: 'rose' },
-            { id: 'youtube', name: 'YouTube', desc: 'Записи стримов и видео', url: 'https://youtube.com/@morishiba1?si=HgTweEDUStomUgpB', icon: 'fa-brands fa-youtube', color: 'red' },
+            { id: 'wishlist', name: 'Вишлист', desc: 'Отправить подарок стримеру в один клик', url: 'https://fetta.app/u/morishiba', icon: 'fa-solid fa-gift', color: 'emerald' },
+            { id: 'tiktok', name: 'TikTok', desc: 'Стримы, нарезки и клипы', url: 'https://www.tiktok.com/@morishiba?_r=1&_t=ZS-998Fu1ks95U', icon: 'fa-brands fa-tiktok', color: 'rose' },
+            { id: 'youtube', name: 'YouTube', desc: 'Прохождения, нарезки, клипы и видео', url: 'https://youtube.com/@morishiba1?si=HgTweEDUStomUgpB', icon: 'fa-brands fa-youtube', color: 'red' },
             { id: 'discord', name: 'Discord', desc: 'Наше уютное комьюнити', url: 'https://discord.gg/G77wfZxfha', icon: 'fa-brands fa-discord', color: 'indigo' }
         ];
 
-        // Load links from memory or use defaults
+        // Load saved URLs while keeping site labels and descriptions controlled by the page owner
         function getLinks() {
             const saved = localStorage.getItem('morishiba_links');
             if (saved) {
-                try { return JSON.parse(saved); } catch (e) { return defaultLinks; }
+                try {
+                    const savedLinks = JSON.parse(saved);
+                    return defaultLinks.map(item => {
+                        const savedItem = savedLinks.find(link => link.id === item.id);
+                        return savedItem ? { ...item, url: savedItem.url || item.url } : item;
+                    });
+                } catch (e) {
+                    return defaultLinks;
+                }
             }
             return defaultLinks;
         }
@@ -167,57 +142,6 @@
                 `;
                 container.insertAdjacentHTML('beforeend', html);
             });
-        }
-
-        // Render Settings Form inputs
-        function renderSettingsForm() {
-            const links = getLinks();
-            const formList = document.getElementById('settingsFormList');
-            formList.innerHTML = '';
-
-            links.forEach((item, index) => {
-                const inputHtml = `
-                    <div class="bg-[#121214] p-3 rounded-xl border border-zinc-800">
-                        <label class="block text-xs font-semibold text-zinc-300 mb-1">${item.name}</label>
-                        <input type="text" id="link_input_${index}" value="${item.url}" 
-                               class="w-full bg-[#1c1c21] border border-zinc-700/80 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-purple-500 transition-colors"
-                               placeholder="https://...">
-                    </div>
-                `;
-                formList.insertAdjacentHTML('beforeend', inputHtml);
-            });
-        }
-
-        function toggleSettings() {
-            const modal = document.getElementById('settingsModal');
-            if (modal.classList.contains('hidden')) {
-                renderSettingsForm();
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            } else {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }
-        }
-
-        function saveLinks() {
-            let links = getLinks();
-            links.forEach((item, index) => {
-                const input = document.getElementById(`link_input_${index}`);
-                if (input) {
-                    item.url = input.value.trim() || '#';
-                }
-            });
-            localStorage.setItem('morishiba_links', JSON.stringify(links));
-            toggleSettings();
-            renderLinks();
-        }
-
-        function resetDefaultLinks() {
-            localStorage.removeItem('morishiba_links');
-            renderSettingsForm();
-            renderLinks();
-            toggleSettings();
         }
 
         function openActionModal(type) {
