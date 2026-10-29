@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>morishiba • Link-in-Bio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for brand and UI icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121214;
+            color: #f3f4f6;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121214;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between py-10 px-4 sm:px-6">
+
+    <!-- Floating Settings Button -->
+    <button onclick="toggleSettings()" class="fixed top-4 right-4 z-40 bg-[#1c1c21] hover:bg-[#27272a] text-zinc-300 p-3 rounded-full shadow-lg border border-zinc-800 transition-all duration-300 hover:scale-105" title="Настроить ссылки">
+        <i class="fa-solid fa-gear text-lg"></i>
+    </button>
+
+    <!-- Main Container -->
+    <div class="w-full max-w-md mx-auto flex flex-col items-center">
+
+        <!-- Header Section with Emoji Avatar -->
+        <div class="w-full text-center mt-2 mb-6 flex flex-col items-center">
+            <!-- Circular Gradient Frame with Cute Shiba Inu Emoji -->
+            <div class="relative w-28 h-28 mb-4 rounded-full p-1 bg-gradient-to-tr from-purple-600 via-pink-500 to-orange-400 shadow-[0_0_25px_rgba(168,85,247,0.3)] flex items-center justify-center bg-[#1c1c21]">
+                <div class="w-full h-full rounded-full bg-[#18181b] flex items-center justify-center text-5xl shadow-inner select-none">
+                    🐕
+                </div>
+                <div class="absolute bottom-0 right-1 w-6 h-6 bg-emerald-500 border-2 border-[#121214] rounded-full shadow-md"></div>
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#f3f4f6] mb-1">
+                morishiba
+            </h1>
+            <p class="text-sm sm:text-base text-purple-300 font-medium mb-1">
+                ♡ Добро пожаловать в мою будку! ♡
+            </p>
+            <p class="text-xs sm:text-sm text-zinc-400 tracking-wide font-medium">
+                стримы игры общение
+            </p>
+        </div>
+
+        <!-- Links Container -->
+        <div id="linksContainer" class="w-full flex flex-col space-y-3.5">
+            <!-- Links will be dynamically populated by JavaScript -->
+        </div>
+
+        <!-- Footer Note -->
+        <div class="mt-10 text-center text-xs text-zinc-500">
+            ♡ спасибо, что заглянул! ♡
+        </div>
+
+    </div>
+
+    <!-- Edit URLs Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-[#1c1c21] border border-zinc-800 rounded-3xl p-6 max-w-md w-full shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-zinc-100 flex items-center gap-2">
+                    <i class="fa-solid fa-link text-purple-400"></i> Настройка ссылок
+                </h3>
+                <button onclick="toggleSettings()" class="text-zinc-400 hover:text-zinc-100 p-2 rounded-xl">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <p class="text-xs text-zinc-400 mb-4">Вставьте ваши актуальные ссылки для каждой кнопки ниже:</p>
+            
+            <div id="settingsFormList" class="overflow-y-auto space-y-3 pr-2 mb-4 flex-1">
+                <!-- Dynamically populated inputs -->
+            </div>
+
+            <div class="flex gap-3 pt-2 border-t border-zinc-800">
+                <button onclick="resetDefaultLinks()" class="w-1/3 py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium rounded-xl transition-colors text-sm">
+                    Сбросить
+                </button>
+                <button onclick="saveLinks()" class="w-2/3 py-2.5 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium rounded-xl transition-all text-sm shadow-lg shadow-purple-900/30">
+                    Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification Modal -->
+    <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-[#1c1c21] border border-zinc-800 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
+            <div id="modalIcon" class="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4 text-purple-400 text-xl">
+                <i class="fa-solid fa-info"></i>
+            </div>
+            <h3 id="modalTitle" class="text-lg font-semibold text-zinc-100 mb-2">Уведомление</h3>
+            <p id="modalText" class="text-sm text-zinc-400 mb-6">Текст сообщения</p>
+            <button onclick="closeModal()" class="w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition-colors">
+                Понятно
+            </button>
+        </div>
+    </div>
+
+    <!-- Script to handle links configuration and rendering -->
+    <script>
+        // Default links configuration matching user requirements
+        const defaultLinks = [
+            { id: 'twitch', name: 'Twitch', desc: 'Стримы и общение', url: 'https://twitch.tv/morishiba', icon: 'fa-brands fa-twitch', color: 'purple' },
+            { id: 'telegram', name: 'Телеграм канал', desc: 'Новостной канал и анонсы', url: 'https://t.me/morishiba', icon: 'fa-brands fa-telegram', color: 'sky' },
+            { id: 'donate', name: 'Донаты', desc: 'Поддержать стримера копеечкой', url: 'https://www.donationalerts.com/r/morishiba', icon: 'fa-solid fa-heart', color: 'pink' },
+            { id: 'memes', name: 'Отправка мемов', desc: 'Закинуть мемчик на стрим', url: '#', isModal: 'meme', icon: 'fa-solid fa-image', color: 'amber' },
+            { id: 'wishlist', name: 'Вишлист', desc: 'Подарок для улучшения контента', url: '#', isModal: 'wishlist', icon: 'fa-solid fa-gift', color: 'emerald' },
+            { id: 'tiktok', name: 'Тик ток', desc: 'Клипы и короткие видео', url: 'https://tiktok.com/@morishiba', icon: 'fa-brands fa-tiktok', color: 'rose' },
+            { id: 'youtube', name: 'Ютуб', desc: 'Записи стримов и видео', url: 'https://youtube.com/@morishiba', icon: 'fa-brands fa-youtube', color: 'red' },
+            { id: 'discord', name: 'Дискорд канал', desc: 'Наше уютное комьюнити', url: 'https://discord.gg/morishiba', icon: 'fa-brands fa-discord', color: 'indigo' }
+        ];
+
+        // Load links from memory or use defaults
+        function getLinks() {
+            const saved = localStorage.getItem('morishiba_links');
+            if (saved) {
+                try { return JSON.parse(saved); } catch (e) { return defaultLinks; }
+            }
+            return defaultLinks;
+        }
+
+        // Render Links on Page
+        function renderLinks() {
+            const links = getLinks();
+            const container = document.getElementById('linksContainer');
+            container.innerHTML = '';
+
+            links.forEach(item => {
+                const isActionModal = item.isModal;
+                const href = isActionModal ? '#' : item.url;
+                const onclickAttr = isActionModal ? `onclick="openActionModal('${item.isModal}')"` : `target="_blank" rel="noopener noreferrer"`;
+
+                const html = `
+                    <a href="${href}" ${onclickAttr}
+                       class="group relative flex items-center justify-between p-4 bg-[#1c1c21] hover:bg-[#25252b] border border-zinc-800/80 hover:border-purple-500/50 rounded-2xl transition-all duration-300 shadow-md hover:scale-[1.01]">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-11 h-11 flex items-center justify-center rounded-xl bg-${item.color}-950/60 text-${item.color}-400 group-hover:scale-110 transition-transform duration-300 border border-${item.color}-800/30">
+                                <i class="${item.icon} text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-semibold text-zinc-100 group-hover:text-purple-300 transition-colors">${item.name}</h2>
+                                <p class="text-xs text-zinc-400">${item.desc}</p>
+                            </div>
+                        </div>
+                        <div class="text-zinc-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-300 pr-1">
+                            <i class="fa-solid fa-chevron-right text-sm"></i>
+                        </div>
+                    </a>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        // Render Settings Form inputs
+        function renderSettingsForm() {
+            const links = getLinks();
+            const formList = document.getElementById('settingsFormList');
+            formList.innerHTML = '';
+
+            links.forEach((item, index) => {
+                const inputHtml = `
+                    <div class="bg-[#121214] p-3 rounded-xl border border-zinc-800">
+                        <label class="block text-xs font-semibold text-zinc-300 mb-1">${item.name}</label>
+                        <input type="text" id="link_input_${index}" value="${item.url}" 
+                               class="w-full bg-[#1c1c21] border border-zinc-700/80 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-purple-500 transition-colors"
+                               placeholder="https://...">
+                    </div>
+                `;
+                formList.insertAdjacentHTML('beforeend', inputHtml);
+            });
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal.classList.contains('hidden')) {
+                renderSettingsForm();
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+
+        function saveLinks() {
+            let links = getLinks();
+            links.forEach((item, index) => {
+                const input = document.getElementById(`link_input_${index}`);
+                if (input) {
+                    item.url = input.value.trim() || '#';
+                }
+            });
+            localStorage.setItem('morishiba_links', JSON.stringify(links));
+            toggleSettings();
+            renderLinks();
+        }
+
+        function resetDefaultLinks() {
+            localStorage.removeItem('morishiba_links');
+            renderSettingsForm();
+            renderLinks();
+            toggleSettings();
+        }
+
+        function openActionModal(type) {
+            const modal = document.getElementById('infoModal');
+            const title = document.getElementById('modalTitle');
+            const text = document.getElementById('modalText');
+            const icon = document.getElementById('modalIcon');
+
+            if (type === 'meme') {
+                title.innerText = "Отправка мемов";
+                text.innerText = "Форма отправки мемов на стрим будет доступна во время трансляции!";
+                icon.innerHTML = '<i class="fa-solid fa-image text-amber-400"></i>';
+            } else if (type === 'wishlist') {
+                title.innerText = "Вишлист";
+                text.innerText = "Список подарков для улучшения качества стримов и контента!";
+                icon.innerHTML = '<i class="fa-solid fa-gift text-emerald-400"></i>';
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('infoModal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            renderLinks();
+        };
+    </script>
+</body>
+</html>
